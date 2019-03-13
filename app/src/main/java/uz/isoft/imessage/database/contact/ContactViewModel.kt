@@ -24,4 +24,5 @@ class ContactViewModel(application: Application):AndroidViewModel(application){
 
     fun getAll() = allContacts
 
+
 }

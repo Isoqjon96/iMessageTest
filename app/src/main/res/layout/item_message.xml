@@ -17,7 +17,7 @@
 
         <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/tvMessage"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Men Mamatvaliyev Isoqjon Baxtiyor o'g'"
                 android:layout_marginStart="8dp"
@@ -26,21 +26,22 @@
         />
 
         <androidx.appcompat.widget.LinearLayoutCompat
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginEnd="8dp"
+                android:gravity="end"
+                android:layout_gravity="end"
         >
             <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/tvTime"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="12:00"
                     android:gravity="end"
                     android:textSize="12sp"
                     android:layout_gravity="end|bottom"
                     android:layout_marginEnd="4dp"
-                    android:layout_weight="1"
                     android:lines="1"
             />
             <androidx.appcompat.widget.AppCompatImageView
@@ -51,6 +52,7 @@
                     android:layout_gravity="center"
                     android:foregroundGravity="center"
             />
+
         </androidx.appcompat.widget.LinearLayoutCompat>
 
     </androidx.appcompat.widget.LinearLayoutCompat>

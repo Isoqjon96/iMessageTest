@@ -27,6 +27,10 @@ class MessageViewModel(application: Application,val to: String,val from: String)
         repository.update(message)
     }
 
+    fun update(uid:String){
+        repository.updateFlag(uid)
+    }
+
     fun getAllMessage() = allMessages
 
     fun getNoSendMessage() = noSendMessage

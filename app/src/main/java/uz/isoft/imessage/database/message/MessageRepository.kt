@@ -26,6 +26,10 @@ class MessageRepository(application: Application) {
         UpdateMessageAsyncTask(messageDao).execute(message)
     }
 
+    fun updateFlag(uid: String){
+        UpdateFlagAsyncTask(messageDao).execute(uid)
+    }
+
     fun insert(message: Message) {
         InsertMessageAsyncTask(messageDao).execute(message)
     }
@@ -53,6 +57,12 @@ class MessageRepository(application: Application) {
 
         override fun doInBackground(vararg p0: Message?) {
             messageDao.update(1,p0[0]?.id?:0)
+        }
+    }
+    private class UpdateFlagAsyncTask(val messageDao: MessageDao) : AsyncTask<String, Unit, Unit>() {
+
+        override fun doInBackground(vararg p0: String?) {
+            messageDao.updateFlag(p0[0]?:"")
         }
     }
 

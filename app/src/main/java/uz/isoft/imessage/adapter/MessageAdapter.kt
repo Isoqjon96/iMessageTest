@@ -64,19 +64,19 @@ class MessageAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     Toast.makeText(this.context ,"asa",Toast.LENGTH_SHORT).show()
                 }
             }
-            when(message.status){
-                0->Picasso.get()
-                    .load(R.drawable.ic_access_time)
-                    .into(itemView.ivSend)
-                1->Picasso.get()
-                    .load(R.drawable.ic_check)
-                    .into(itemView.ivSend)
-
-                else->Picasso.get()
-                    .load(R.drawable.ic_check_all)
-                    .into(itemView.ivSend)
-
-            }
+//            when(message.status){
+//                0->Picasso.get()
+//                    .load(R.drawable.ic_access_time)
+//                    .into(itemView.ivSend)
+//                1->Picasso.get()
+//                    .load(R.drawable.ic_check)
+//                    .into(itemView.ivSend)
+//
+//                else->Picasso.get()
+//                    .load(R.drawable.ic_check_all)
+//                    .into(itemView.ivSend)
+//
+//            }
         }
     }
 

@@ -60,11 +60,11 @@ class ChatService : Service() {
 
             override fun onOpen(handshakedata: ServerHandshake?) {
                 Log.i("doniyor", "onOpen")
-//                ChatService.isOpen = true
+                ChatService.isOpen = true
             }
 
             override fun connect() {
-                ChatService.isOpen = true
+//                ChatService.isOpen = true
                 Log.i("doniyor", "Connect")
                 super.connect()
             }
@@ -77,7 +77,7 @@ class ChatService : Service() {
             }
 
             override fun closeConnection(code: Int, message: String?) {
-                ChatService.isOpen = false
+//                ChatService.isOpen = false
                 super.closeConnection(code, message)
             }
 
@@ -125,9 +125,10 @@ class ChatService : Service() {
         }
 
         webSocket?.connect()
+
     }
 
-    fun getInternetState(): Boolean {
+    private fun getInternetState(): Boolean {
         val connectivityManager = application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkInfo = connectivityManager.activeNetworkInfo
         return networkInfo != null && networkInfo.isConnected
@@ -137,7 +138,7 @@ class ChatService : Service() {
     }
     fun sendMsg(s: String) {
 
-        if (ChatService.isOpen ?: false && webSocket != null) {
+        if (ChatService.isOpen && webSocket != null) {
 
 
             webSocket?.send(s)
@@ -154,7 +155,6 @@ class ChatService : Service() {
     override fun onBind(p0: Intent?): IBinder? {
         return MyBinder()
     }
-
 
     override fun onDestroy() {
         Toast.makeText(applicationContext, "onclose service", Toast.LENGTH_SHORT).show()

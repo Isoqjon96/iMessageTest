@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_main.*
 import uz.isoft.imessage.Contact
 import uz.isoft.imessage.Message
@@ -26,8 +25,6 @@ class MainFragment : Fragment(), ContactAdapter.CallBack {
         var adapter = ContactAdapter()
     }
 
-    private var compositeDisposable = CompositeDisposable()
-    private var data = ArrayList<Contact>()
     private lateinit var contactView: ContactViewModel
     private lateinit var model: MessageViewModel
 
@@ -46,8 +43,7 @@ class MainFragment : Fragment(), ContactAdapter.CallBack {
         })
         model = ViewModelProviders.of(this).get(MessageViewModel::class.java)
         model.getNoReads().observe(this, Observer<List<Message>> {
-
-
+            adapter.setCount(it as ArrayList<Message>)
         })
 
 //        tempMessageViewModel = ViewModelProviders.of(this).get(TempMessageViewModel::class.java)
@@ -62,6 +58,7 @@ class MainFragment : Fragment(), ContactAdapter.CallBack {
 
     override fun onItemClick(contactModel: Contact) {
         val a = Contact(name = contactModel.name, uid = contactModel.uid, phone = contactModel.phone)
+        model.update(contactModel.uid?:"")
         (requireContext() as MainActivity).replaceFragment(ChatFragment.getInstance(a), "chat")
     }
 

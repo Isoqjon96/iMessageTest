@@ -5,16 +5,20 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_user.view.*
-import uz.isoft.imessage.*
+import uz.isoft.imessage.Contact
+import uz.isoft.imessage.Message
+import uz.isoft.imessage.PManager
+import uz.isoft.imessage.R
 
 class ContactAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var data = ArrayList<Contact>()
     private var callBack: CallBack? = null
     private var temp = ArrayList<Message>()
 
-    fun setCallBack(callBack: CallBack){
+    fun setCallBack(callBack: CallBack) {
         this.callBack = callBack
     }
+
     fun setData(data: ArrayList<Contact>) {
         this.data = data
         notifyDataSetChanged()
@@ -22,7 +26,7 @@ class ContactAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     fun getData() = data
 
-    fun setCount(messages:ArrayList<Message>){
+    fun setCount(messages: ArrayList<Message>) {
         temp = messages
         notifyDataSetChanged()
     }
@@ -39,36 +43,38 @@ class ContactAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var count =0
+        var count = ArrayList<Message>()
         fun onBindItem(contact: Contact) {
 
-            if (contact.flag == 1) {
-
-                temp.forEach {
-                    if(it.from ==contact.uid){
-                        count ++
-                    }
+            temp.forEach { p ->
+                if (p.flag == 0 && contact.uid == p.to && !count.contains(p)) {
+                    count.add(p)
                 }
-                itemView.apply {
-                    //                if(contact.image!=""){
+            }
+            if (count.size<1) {
+                itemView.tvCount.visibility = View.GONE
+            } else {
+                itemView.tvCount.visibility = View.VISIBLE
+                itemView.tvCount.text = count.size.toString()
+            }
+            itemView.apply {
+                //                if(contact.image!=""){
 //                    Picasso.get()
 //                        .load(SERVER_IMAGE_ADDRESS+contact.image)
 //                        .placeholder(R.drawable.ic_account)
 //                        .into(ivUser)
 //                }
-                    tvCount.text = count.toString()
-                    tvName.text = contact.name
-                    tvMessage.text = contact.phone
-                    setOnClickListener {
-                        callBack?.onItemClick(contact)
-                    }
-//                tvTime.text = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(contact.time?: System.currentTimeMillis()))
+                tvName.text = contact.name
+                tvMessage.text = contact.phone
+                setOnClickListener {
+                    callBack?.onItemClick(contact)
                 }
+//                tvTime.text = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(contact.time?: System.currentTimeMillis()))
             }
         }
     }
-
-    interface CallBack{
+    interface CallBack {
         fun onItemClick(contactModel: Contact)
     }
 }
+

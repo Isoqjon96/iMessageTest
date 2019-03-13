@@ -38,6 +38,9 @@ interface MessageDao{
     @Query("UPDATE message SET  status = :status WHERE id=:id")
     fun update(status: Int, id:Int)
 
+    @Query("UPDATE message SET flag=1 WHERE `to`=:uid")
+    fun updateFlag(uid:String)
+
     @Query("SELECT * FROM message WHERE (`to` = :to AND `from`= :from) OR (`to` = :from AND `from`= :to)")
     fun getUserMessage(to:String,from:String):LiveData<List<Message>>
 
