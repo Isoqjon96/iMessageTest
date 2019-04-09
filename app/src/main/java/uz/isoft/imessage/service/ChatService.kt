@@ -21,31 +21,25 @@ import uz.isoft.imessage.Message
 import uz.isoft.imessage.PManager
 import uz.isoft.imessage.R
 import uz.isoft.imessage.database.message.MessageRepository
-import uz.isoft.imessage.main.fragment.MainFragment
 import uz.isoft.imessage.start.SplashActivity
 import java.net.URI
 import java.net.URISyntaxException
 
 class ChatService : Service() {
-    companion object {
-        var isOpen = false
-    }
 
-    private var webSocket: WebSocketClient? = null
-
-    private var repository: MessageRepository? = null
+    var webSocket: WebSocketClient? = null
+    private var isOpen = false
+    private var repository: MessageRepository? =null
     private var gson = Gson()
 
     override fun onCreate() {
-        if (getInternetState()) {
-            connectWebSocket()
-        }
+        connectWebSocket()
         repository = MessageRepository(application)
         Toast.makeText(applicationContext, "onstart", Toast.LENGTH_SHORT).show()
         super.onCreate()
     }
 
-    private fun connectWebSocket() {
+    fun connectWebSocket() {
         Toast.makeText(applicationContext, "Service", Toast.LENGTH_SHORT).show()
         val uri: URI
         try {
@@ -59,90 +53,64 @@ class ChatService : Service() {
         webSocket = object : WebSocketClient(uri, headers) {
 
             override fun onOpen(handshakedata: ServerHandshake?) {
-                Log.i("doniyor", "onOpen")
-                ChatService.isOpen = true
+                Log.i("websocket", "onOpen")
+                this@ChatService.isOpen = true
             }
-
-            override fun connect() {
-//                ChatService.isOpen = true
-                Log.i("doniyor", "Connect")
-                super.connect()
-            }
-
-            override fun getConnection(): WebSocket {
-//                ChatService.isOpen = true
-                Log.i("doniyor", "getConnect")
-
-                return super.getConnection()
-            }
-
-            override fun closeConnection(code: Int, message: String?) {
-//                ChatService.isOpen = false
-                super.closeConnection(code, message)
-            }
-
 
             override fun onClose(code: Int, reason: String?, remote: Boolean) {
-                Log.i("doniyor", "onclose")
-                Toast.makeText(applicationContext, "onclose", Toast.LENGTH_SHORT).show()
-                ChatService.isOpen = false
+                Log.i("websocket", "onclose")
+                Toast.makeText(applicationContext,"onclose",Toast.LENGTH_SHORT).show()
+                this@ChatService.isOpen = false
             }
 
             override fun onMessage(message: String?) {
-                Log.i("doniyor", message)
-                val temp = gson.fromJson<Message>(message, Message::class.java)
+                Log.i("websocket", message)
+                val temp = gson.fromJson<Message>(message,Message::class.java)
                 temp.status = 1
-//                if(MainFragment.adapter.getData().forEach {
-//                        if (it.uid != temp.to){
-//
-//                        }
-//                    })
                 repository?.insert(temp)
 
                 val pendingIntent = PendingIntent.getActivity(
-                    applicationContext, 0, Intent(applicationContext, SplashActivity::class.java)
-                    , PendingIntent.FLAG_ONE_SHOT
+                    applicationContext,
+                    System.currentTimeMillis().toInt(),
+                    Intent(applicationContext, SplashActivity::class.java)
+                    ,
+                    0
                 )
 
                 val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+
+                val inbox = NotificationCompat.InboxStyle()
+                inbox.setBigContentTitle(temp.from)
+                inbox.addLine(temp.text)
 
                 val notificationBuilder = NotificationCompat.Builder(applicationContext)
                     .setContentTitle("${temp.from} dan xabar")
                     .setContentText(temp.text)
                     .setPriority(Notification.PRIORITY_MAX)
-                    .setAutoCancel(true)
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setSmallIcon(R.drawable.ic_launcher_web)
                     .setSound(defaultSoundUri)
+                    .setStyle(inbox)
                     .setContentIntent(pendingIntent)
+
                 val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 notificationManager.notify(0, notificationBuilder.build())
             }
 
             override fun onError(ex: Exception?) {
-
-                Log.i("doniyor", "onerror")
+                Log.i("websocket", "onerror")
             }
         }
-
         webSocket?.connect()
-
     }
 
-    private fun getInternetState(): Boolean {
-        val connectivityManager = application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo = connectivityManager.activeNetworkInfo
-        return networkInfo != null && networkInfo.isConnected
-    }
-    fun getState():Boolean{
-        return webSocket?.connection?.isOpen ?: false
-    }
-    fun sendMsg(s: String) {
+    fun sendMsg(s:String):Boolean{
 
-        if (ChatService.isOpen && webSocket != null) {
-
-
+        if(isOpen && webSocket!=null){
             webSocket?.send(s)
-            Log.i("doniyor send", s)
+            Log.i("websockets",s)
+        return true
+        }else{
+            return false
         }
     }
 
@@ -156,9 +124,9 @@ class ChatService : Service() {
         return MyBinder()
     }
 
+
     override fun onDestroy() {
-        Toast.makeText(applicationContext, "onclose service", Toast.LENGTH_SHORT).show()
+        Toast.makeText(applicationContext,"onclose service",Toast.LENGTH_SHORT).show()
         super.onDestroy()
     }
-
 }

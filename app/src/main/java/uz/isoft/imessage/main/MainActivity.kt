@@ -8,22 +8,25 @@ import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
-import android.util.Log
-import com.google.android.material.navigation.NavigationView
-import androidx.core.view.GravityCompat
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.google.android.material.navigation.NavigationView
 import com.google.gson.Gson
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.android.synthetic.main.activity_main.*
-import uz.isoft.imessage.*
+import uz.isoft.imessage.Message
+import uz.isoft.imessage.PManager
+import uz.isoft.imessage.R
+import uz.isoft.imessage.SERVER_IMAGE_ADDRESS
 import uz.isoft.imessage.database.message.MessageViewModel
 import uz.isoft.imessage.main.fragment.MainFragment
 import uz.isoft.imessage.service.ChatService
@@ -32,39 +35,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     var mService: ChatService? = null
     private var mBound = false
-    private lateinit var model:MessageViewModel
+    private lateinit var model: MessageViewModel
+    private var data = ArrayList<Message>()
+    private var gson = Gson()
 
-    private val runnable = Runnable {
-        Log.i("doniyor test",mService?.getState().toString()?:false.toString())
-        if(mBound && ChatService.isOpen){
+    private lateinit var runnable: Runnable
 
-            model.getNoSendMessage().observe(this, Observer<List<Message>> {
-                it.let { u->
-                    u.forEach { m->
-//                        val s = Message(
-//                            date = m.date,
-//                            text = m.text.toString(),
-//                            from = m.from,
-//                            to = m.to,
-//                            status = 1
-//                        )
-
-                        if(m.status==0 && getInternetState() && mService?.getState()?:false) {
-                            mService?.sendMsg(Gson().toJson(m).toString())
-                            m.status =1
-                            model.updateMessage(m)
-                            Log.i("doniyor main",m.toString())
-                        }
-//                        mRepository.insert(m)
-                        Log.i("doniyor main",m.toString())
-
-                    }
-                }
-            })
-        }
-    }
-
-    val handler = Handler()
+    private val handler = Handler()
 
     private val mConnection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -95,40 +72,42 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         nv.setNavigationItemSelectedListener(this)
         setData()
-        replaceFragment(MainFragment.getInstance(),"main")
+        replaceFragment(MainFragment.getInstance(), "main")
         startService(Intent(applicationContext, ChatService::class.java))
 
         model = ViewModelProviders.of(this).get(MessageViewModel::class.java)
+
         model.getNoSendMessage().observe(this, Observer<List<Message>> {
-            it.let { u->
-                u.forEach { m->
-                    //                        val s = Message(
-//                            date = m.date,
-//                            text = m.text.toString(),
-//                            from = m.from,
-//                            to = m.to,
-//                            status = 1
-//                        )
+            runnable = Runnable {
+                if (!mBound) {
+                    bindService(Intent(this, ChatService::class.java), mConnection, Context.BIND_AUTO_CREATE)
+                    Toast.makeText(this, "mBound", Toast.LENGTH_SHORT).show()
 
-                    if(m.status==0 && getInternetState() && mService?.getState()?:false) {
-                        mService?.sendMsg(Gson().toJson(m).toString())
-                        m.status =1
-                        model.updateMessage(m)
-                        Log.i("doniyor main",m.toString())
+                } else if (mService?.webSocket?.isOpen != true) {
+                    mService?.connectWebSocket()
+                    Toast.makeText(this, mService?.webSocket?.isOpen.toString() + "mService", Toast.LENGTH_SHORT).show()
+                } else if (checkNetwork()) {
+                    it.forEach { m ->
+                        if (mService?.sendMsg(gson.toJson(m).toString()) == true && m.status != 1) {
+                            m.status = 1
+                            model.updateMessage(m)
+                        }
                     }
-//                        mRepository.insert(m)
-                    Log.i("doniyor main",m.toString())
-
+                }
+                if (data.size == 0) {
+                    handler.removeCallbacks(runnable)
                 }
             }
+            handler.postDelayed(runnable, 1000)
         })
-
     }
 
     override fun onStart() {
-        bindService(Intent(this,ChatService::class.java),mConnection,Context.BIND_AUTO_CREATE)
-//        handler.postDelayed(runnable,10000)
+        if (!mBound) {
+            bindService(Intent(this, ChatService::class.java), mConnection, Context.BIND_AUTO_CREATE)
+        }
         super.onStart()
+
     }
 
     override fun onStop() {
@@ -140,7 +119,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onDestroy() {
-//        handler.removeCallbacks(runnable)
+        handler.removeCallbacks(runnable)
         super.onDestroy()
     }
 
@@ -164,17 +143,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Handle navigation view item clicks here.
         when (item.itemId) {
 
-           }
+        }
 
         dl.closeDrawer(GravityCompat.START)
         return true
     }
+
     fun replaceFragment(fragment: Fragment, tag: String) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.container, fragment, tag)
             .addToBackStack(tag)
             .commit()
     }
+
     override fun onBackPressed() {
         when {
             dl.isDrawerOpen(GravityCompat.START) -> dl.closeDrawer(GravityCompat.START)
@@ -202,6 +183,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    private fun checkNetwork(): Boolean {
+        var wifiDataAvailable = false
+        var mobileDataAvailable = false
+        val conManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = conManager.allNetworkInfo
+        for (netInfo in networkInfo) {
+            if (netInfo.typeName.equals("WIFI", true))
+                if (netInfo.isConnected)
+                    wifiDataAvailable = true
+            if (netInfo.typeName.equals("MOBILE", true))
+                if (netInfo.isConnected)
+                    mobileDataAvailable = true
+        }
+        return wifiDataAvailable || mobileDataAvailable
+    }
 
     private fun getInternetState(): Boolean {
         val connectivityManager = application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

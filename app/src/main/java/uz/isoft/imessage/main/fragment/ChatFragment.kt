@@ -22,9 +22,7 @@ class ChatFragment : Fragment() {
 
     private var adapter = MessageAdapter()
     private var contact = Contact()
-    private val gson = Gson()
     private lateinit var messageViewModel: MessageViewModel
-    private lateinit var tempModel: TempViewModel
 
 
     companion object {
@@ -54,10 +52,6 @@ class ChatFragment : Fragment() {
         rv.adapter = adapter
 
         messageViewModel = ViewModelProviders.of(this, MessageFactory(App.getInstance(), contact.uid ?: "", PManager.getUID())).get(MessageViewModel::class.java)
-//        tempModel = ViewModelProviders.of(this).get(TempViewModel::class.java)
-//        tempModel.getAllTemp().observe(this, Observer {
-//
-//        })
         messageViewModel.getChatMessage().observe(this,
             Observer<List<Message>> { t ->
                 adapter.setData(t)

@@ -36,14 +36,12 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     style="@style/TextAppearance.Widget.AppCompat.Toolbar.Title"
-                    tools:text="Isoqjon"
                     android:layout_weight="8"
             />
             <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/tvTime"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    tools:text="12:00"
                     android:layout_weight="2"
                     android:gravity="end"
             />
@@ -61,7 +59,6 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     style="@style/TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
-                    tools:text="message"
                     android:layout_weight="8"
             />
             <androidx.appcompat.widget.AppCompatTextView
@@ -69,7 +66,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     style="@style/TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
-                    tools:text="2"
+                    tools:text="1"
                     android:gravity="center"
                     android:layout_gravity="end"
                     android:background="@drawable/ic_circle_solid"

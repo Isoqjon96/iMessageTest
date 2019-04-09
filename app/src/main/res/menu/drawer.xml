@@ -3,9 +3,25 @@
 
     <group android:checkableBehavior="none">
         <item
-            android:id="@+id/nav_main"
-            android:icon="@drawable/ic_account"
-            android:title="@string/main" />
+                android:icon="@drawable/ic_group_black_24dp"
+                android:title="New group"/>
+        <item
+                android:id="@+id/nav_main"
+                android:icon="@drawable/ic_lock_black_24dp"
+                android:title="New secret chat"/>
+        <item
+                android:icon="@drawable/ic_volume_low"
+                android:title="New channel"/>
     </group>
+
+    <group android:checkableBehavior="none">
+        <item
+                android:icon="@drawable/account_box"
+                android:title="Contacts"/>
+        <item
+                android:icon="@drawable/ic_wrench"
+                android:title="Setting"/>
+    </group>
+
 
 </menu>
